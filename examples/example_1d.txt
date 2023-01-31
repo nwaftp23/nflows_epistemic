@@ -1,0 +1,21 @@
+# ${ENV} = 'bimodal'
+
+# Nflows Base
+python -u DYNA_Uncertain_1d.py --dyna_model nflows_ensemble --num_layers 1 --hids 200 \
+        --domain 1.2 --env ${ENV} --epochs 6000 --dropout_masks --base_distro
+
+# Nflows Out
+python -u DYNA_Uncertain_1d.py --dyna_model nflows_ensemble --num_layers 1 --hids 200 \
+	--domain 1.2 --env ${ENV} --epochs 6000 --dropout_masks --uncertain_nflows 
+
+#MC Drop
+python -u DYNA_Uncertain_1d.py --dyna_model mc_drop --num_layers 5 --hids 400 \     
+        --env ${ENV} --epochs 5000 --ensemble_size 20
+
+#PNEs
+python -u DYNA_Uncertain_1d.py --dyna_model nn_ensemble --num_layers 3 --hids 50 \     
+        --env ${ENV} --epochs 5000 --ensemble_size 5
+
+#Nflows
+python -u DYNA_Uncertain_1d.py --dyna_model nflows --num_layers 1 --hids 100 \
+        --domain 1.2 --env ${ENV} --epochs 2000 

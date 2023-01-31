@@ -1,0 +1,34 @@
+# ${ENV} = 'WetChicken-v0'
+# ${NW} = 0.0
+# ${MODES} = 1
+# Train an sac policy first
+
+cd pytorch-sac/
+python main.py --env ${ENV}
+
+# Next generate replay buffers
+python simulate_data.py --noise_weight ${NW} --modes ${MODES} --env ${ENV} --numb_episodes 1250 \
+       --test_data
+python simulate_data.py --noise_weight ${NW} --modes ${MODES} --env ${ENV} --numb_episodes 5000 \
+        --policy_type PureRand
+python simulate_data.py --noise_weight ${NW} --modes ${MODES} --env ${ENV} --numb_episodes 1250 \
+        --policy_type PureRand --test_data
+
+# Run Experiments
+# Nflows Out
+python DYNA_Uncertain_multid.py --noise_weight ${NW} --env ${ENV} --modes ${MODES} --dropout_masks \
+	--uncertain_nflows --epochs 6000 --domain 1.2 --num_layers 1 --hids 200 \
+	--dyna_model nflows_ensemble
+# Nflows Base
+python DYNA_Uncertain_multid.py --noise_weight ${NW} --env ${ENV} --modes ${MODES} --dropout_masks \
+        --base_distro --epochs 6000 --domain 1.2 --num_layers 1 --hids 200 \
+	--dyna_model nflows_ensemble
+# PNEs
+python DYNA_Uncertain_multid.py --noise_weight ${NW} --env ${ENV} --modes ${MODES} --hids 50 \
+	--dyna_model nn_ensemble --epochs 5000
+# MC Drop
+python DYNA_Uncertain_multid.py --noise_weight ${NW} --env ${ENV} --modes ${MODES} \
+	--dyna_model mc_drop --num_layers 5 --hids 400 --epochs 5000 --ensemble_size 20
+# Nflows
+python DYNA_Uncertain_multid.py --noise_weight ${NW} --env ${ENV} --modes ${MODES} \
+	--epochs 1000 --domain 1.2 --num_layers 1 --hids 100 --dyna_model nflows
